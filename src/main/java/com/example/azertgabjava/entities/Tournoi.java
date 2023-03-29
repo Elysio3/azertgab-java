@@ -20,6 +20,14 @@ public class Tournoi {
     // le type (arbre ou deathmatch)
     // les équipes
     // les matchs
+
+    /**
+     * fonction d'initialisation du tournoi
+     * @param nom le nom du tournoi
+     * @param type le type du tournoi (brackets ou deathmatch)
+     * @param equipes la liste des équipes
+     * @throws Exception
+     */
     public void init(String nom, String type, ArrayList<Equipe> equipes) throws Exception{
         this.nom = nom;
         this.type = type;
@@ -32,6 +40,7 @@ public class Tournoi {
 
             // on ne peut faire un tournoi brackets sans un minimum d'équipes
             if(TYPE_BRACKETS.equals(type) && equipes.size() >= 8) {
+                System.out.println("tournoi de type brackets cree");
                 this.equipes = equipes;
                 this.type = TYPE_BRACKETS;
                 this.demie = false;
@@ -58,6 +67,7 @@ public class Tournoi {
                 matchs.addAll(pouleA.getMatchs());
                 matchs.addAll(pouleB.getMatchs());
             } else {
+                System.out.println("tournoi de type deathmatch cree");
                 this.equipes = equipes;
                 this.type = "deathmatch";
                 this.createMatchs();
@@ -77,10 +87,12 @@ public class Tournoi {
     }
 
     public void actualiserClassement() {
+        System.out.println("classement actualisé");
         this.equipes.sort(new classementComparator());
     }
 
     public void createMatchs() {
+        System.out.println("matchs tournoi créés");
         // création de chaque match possible (toute combinaison possible)
         int id = 0;
         for (int i = 0; i < this.equipes.size(); i++) {
@@ -91,6 +103,7 @@ public class Tournoi {
         }
     }
     public void createDemieFinale() {
+        System.out.println("demi finale créée");
         // création des match de quart de finales (8 equipes)
         actualiserClassement();
         matchs.add(new Match(id, this.equipes.get(0), this.equipes.get(2)));
@@ -98,6 +111,7 @@ public class Tournoi {
     }
 
     public void createFinale() {
+        System.out.println("finale créée");
         // création des match de quart de finales (8 equipes)
         actualiserClassement();
         matchs.add(new Match(id, this.equipes.get(0), this.equipes.get(1)));
@@ -106,52 +120,88 @@ public class Tournoi {
 
     public void registerMatch(int idMatch, int scoreEquipe1, int scoreEquipe2) {
 
+        System.out.println("enregistrement match " + idMatch);
+
         // on ne modifie seulement si le match n'est pas déjà validé
         if(!this.matchs.get(idMatch).isValide()) {
             // si tournoi de type bracket, on actualise les phase de poule si elles ne sont pas terminées
             if(TYPE_BRACKETS.equals(this.type)) {
 
                 // si c'est un match de poule
-                // si les matchs de cette poule ne sont pas fini
-                // on update classement Poule
-                if(matchs.get(idMatch).getPoule() == 'A' && !this.pouleA.checkIfAllMatchCompleted()) {
+                // et si les matchs de cette poule ne sont pas fini
+                // on va chercher l'équipe concernée par le match
+                // on update ses scores totaux
+                if(matchs.get(idMatch).getPoule() == 'A') {
+                    System.out.println("Match de poule A");
                     int i = 0;
+                    // on va chercher l'équipe correspondante au match depuis les poules
                     for(Equipe equipe : this.getPouleA().getEquipes()) {
                         if(Objects.equals(equipe.getNom(), matchs.get(idMatch).getEquipe1().getNom())) {
-                            this.pouleA.getEquipes().get(i).addScore(scoreEquipe1);
+                            equipe.addScore(scoreEquipe1);
+                            System.out.println("locaux " + equipe.getNom()
+                                    + " score " + scoreEquipe1
+                                    + " total " + equipe.getScore());
                         }
                         if(Objects.equals(equipe.getNom(), matchs.get(idMatch).getEquipe2().getNom())) {
-                            this.pouleA.getEquipes().get(i).addScore(scoreEquipe2);
+                            equipe.addScore(scoreEquipe2);
+                            System.out.println("visiteurs " + equipe.getNom()
+                                    + " score " + scoreEquipe2
+                                    + " total " + equipe.getScore());
                         }
                         i++;
                     }
                 }
 
-                if(matchs.get(idMatch).getPoule() == 'B' && !this.pouleB.checkIfAllMatchCompleted()) {
+                // même chose si poule B
+                if(matchs.get(idMatch).getPoule() == 'B') {
+                    System.out.println("Match de poule B");
                     int i = 0;
-                    for(Equipe equipe : this.getPouleB().getEquipes()) {
-                        if(Objects.equals(equipe.getNom(), matchs.get(idMatch).getEquipe1().getNom())) {
-                            this.pouleB.getEquipes().get(i).addScore(scoreEquipe1);
-                        }
+                    // on va chercher l'équipe correspondante au match depuis les poules
+                    for(Equipe equipe : this.getPouleA().getEquipes()) {
                         if(Objects.equals(equipe.getNom(), matchs.get(idMatch).getEquipe2().getNom())) {
-                            this.pouleB.getEquipes().get(i).addScore(scoreEquipe2);
+                            equipe.addScore(scoreEquipe2);
+                            System.out.println("locaux " + equipe.getNom()
+                                    + " score " + scoreEquipe1
+                                    + " total " + equipe.getScore());
+                        }
+                        if(Objects.equals(equipe.getNom(), matchs.get(idMatch).getEquipe1().getNom())) {
+                            equipe.addScore(scoreEquipe2);
+                            System.out.println("visiteurs " + equipe.getNom()
+                                    + " score " + scoreEquipe2
+                                    + " total " + equipe.getScore());
                         }
                         i++;
                     }
                 }
-
-                // on met à jour le match dans la liste des match du tournoi
-                matchs.get(idMatch).setScoreEquipe1(scoreEquipe1);
-                matchs.get(idMatch).getEquipe1().addScore(scoreEquipe1);
-
-                matchs.get(idMatch).setScoreEquipe2(scoreEquipe2);
-                matchs.get(idMatch).getEquipe2().addScore(scoreEquipe2);
-
-                matchs.get(idMatch).setValide(true);
             }
+
+            System.out.println("Actualisation des scores");
+            // on met à jour le match dans la liste des match du tournoi
+            matchs.get(idMatch).setScoreEquipe1(scoreEquipe1);
+            matchs.get(idMatch).getEquipe1().addScore(scoreEquipe1);
+
+            matchs.get(idMatch).setScoreEquipe2(scoreEquipe2);
+            matchs.get(idMatch).getEquipe2().addScore(scoreEquipe2);
+
+            matchs.get(idMatch).setValide(true);
         }
+
         actualiserClassement();
     }
+
+
+    public boolean checkIfAllMatchCompleted() {
+        boolean allCompleted = true;
+        for(Match match : this.matchs) {
+            if (!match.isValide()) {
+                allCompleted = false;
+                break;
+            }
+        }
+        return  allCompleted;
+    }
+
+
 
 
     public Tournoi() {}
@@ -210,5 +260,21 @@ public class Tournoi {
 
     public void setType(String type) {
         this.type = type;
+    }
+
+    public boolean isDemie() {
+        return demie;
+    }
+
+    public void setDemie(boolean demie) {
+        this.demie = demie;
+    }
+
+    public boolean isFinale() {
+        return finale;
+    }
+
+    public void setFinale(boolean finale) {
+        this.finale = finale;
     }
 }

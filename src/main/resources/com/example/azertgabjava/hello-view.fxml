@@ -1,14 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.geometry.Insets?>
-<?import javafx.scene.control.Button?>
-<?import javafx.scene.control.Label?>
-<?import javafx.scene.control.TextArea?>
-<?import javafx.scene.control.TextField?>
-<?import javafx.scene.layout.HBox?>
-<?import javafx.scene.layout.VBox?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
 <?import javafx.scene.text.Text?>
-
 <VBox centerShape="false" fillWidth="false" nodeOrientation="LEFT_TO_RIGHT" prefHeight="400.0" prefWidth="640.0" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="com.example.azertgabjava.HelloController">
     <children>
@@ -62,7 +57,7 @@
                                 <Insets />
                             </VBox.margin>
                         </HBox>
-                        <Button layoutX="130.0" layoutY="12.0" onAction="#validerMatch" text="Valider" />
+                        <Button fx:id="btnValiderMatch" layoutX="130.0" layoutY="12.0" onAction="#validerMatch" text="Valider" />
                     </children>
                 </VBox>
                 <VBox fx:id="TournoiBox1" fillWidth="false" spacing="20.0">
@@ -71,7 +66,19 @@
                     </padding>
                 </VBox>
                 <Text fx:id="listClassement" />
+                <VBox fillWidth="false" spacing="20.0">
+                    <padding>
+                        <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+                    </padding>
+                </VBox>
                 <Text fx:id="listMatch" />
+                <VBox fillWidth="false" spacing="20.0">
+                    <padding>
+                        <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+                    </padding>
+                </VBox>
+                <Text fx:id="vainqueur" />
+                <Button fx:id="btnExportJson" layoutX="130.0" layoutY="12.0" onAction="#exportJSON" text="exporter résultat (json)" />
             </children>
         </HBox>
     </children>

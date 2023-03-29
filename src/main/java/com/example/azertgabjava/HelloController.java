@@ -30,32 +30,43 @@ public class HelloController {
     public VBox TournoiBox1;
     public Text listClassement;
     public Text listMatch;
+    public Button btnExportJson;
+    public Text vainqueur;
+    public Button btnValiderMatch;
     private ArrayList<Equipe> equipes;
     private ArrayList<Match> matchs;
     private Tournoi tournoi;
     private int actualMatch;
-    private char actualPoule;
 
 
 
     @FXML
     protected void initialize() {
+        System.out.println("génération de la fenêtre");
+        System.out.println("instanciation des variables globales");
         // on init les variables
         equipes = new ArrayList<>();
         tournoi = new Tournoi();
         matchs = new ArrayList<>();
+        btnExportJson.setDisable(true);
 
         // on disable les boutons de validation
         allowClicButton();
-
-
     }
 
+    /**
+     *
+     */
     public void addNewEquipe() {
+        System.out.println("clic ajouter Equipe");
         if(!Objects.equals(inputNomEquipe.getText(), "")) {
+
+            System.out.println("Ajout de l'equipe " + inputNomEquipe.getText());
             equipes.add(new Equipe(inputNomEquipe.getText()));
+
             inputNomEquipe.clear();
             NbTotalEquipe.setText("total : " + equipes.size());
+
             this.allowClicButton();
             this.actualiserClassement();
         }
@@ -66,9 +77,13 @@ public class HelloController {
      * avec la liste actuelle des équipes
      */
     public void startNewTournoiDeathMatch() throws Exception {
+        System.out.println("clic startNewTournoiDeathMatch");
         if(!Objects.equals(inputNomTournoi.getText(), "")) {
             if(equipes.size() > 2) {
-                tournoi.init("nomTournoi.getText()", "deathmatch", equipes);
+
+                System.out.println("Creation tournoi " + inputNomTournoi.getText());
+                tournoi.init(inputNomTournoi.getText(), "deathmatch", equipes);
+
                 actualMatch = 0;
                 actualiserClassement();
                 actualiserMatchs();
@@ -78,9 +93,13 @@ public class HelloController {
     }
 
     public void startNewTournoiBrackets() throws Exception {
+        System.out.println("clic startNewTournoiBrackets");
         if(!Objects.equals(inputNomTournoi.getText(), "")) {
-            if(equipes.size() > 8) {
-                tournoi.init("nomTournoi.getText()", "brackets", equipes);
+            if(equipes.size() >= 8) {
+
+                System.out.println("Creation tournoi " + inputNomTournoi.getText());
+                tournoi.init(inputNomTournoi.getText(), "brackets", equipes);
+
                 actualMatch = 0;
                 actualiserClassement();
                 actualiserMatchs();
@@ -89,31 +108,65 @@ public class HelloController {
     }
 
     // enable/disable buttons
-    public void allowClicButton() {
-        btnStartNewTournoiBrackets.setDisable(true);
-        btnStartNewTournoiDeathMatch.setDisable(true);
 
-        if(equipes.size() > 2) {
-            btnStartNewTournoiDeathMatch.setDisable(false);
-            if(equipes.size() >= 8) {
-                btnStartNewTournoiBrackets.setDisable(false);
-            }
-        }
-    }
 
 
     public void validerMatch() {
+        System.out.println("Validation Match n°" + actualMatch);
+
 
         int scoreE1 = Integer.parseInt(inputScoreEquipe1.getText());
         int scoreE2 = Integer.parseInt(inputScoreEquipe2.getText());
 
+        System.out.println("scores " + scoreE1 + " à " + scoreE2);
+
         tournoi.registerMatch(actualMatch, scoreE1, scoreE2);
         actualMatch++;
+
+        // on vérifie si c'est la fin des matchs
+        // on vérifie si les matchs sont tous validés
+        if(tournoi.checkIfAllMatchCompleted()) {
+            // si on est sur un brackets
+            if(Objects.equals(tournoi.getType(), "brackets")) {
+                // si les demies finales ont été créées
+                if(tournoi.isDemie()) {
+                    // si la finale as été créée
+                    if(tournoi.isFinale()) {
+                        this.terminerTournoi();
+                    } else {
+                        // finale pas encore créée
+                        // on créée la finale
+                        tournoi.createFinale();
+                    }
+                } else {
+                    // demies pas encore créée
+                    // on créée les demies
+                    tournoi.createDemieFinale();
+                }
+            } else {
+                this.terminerTournoi();
+            }
+        }
         actualiserClassement();
         actualiserMatchs();
     }
 
+    public void terminerTournoi() {
+        btnExportJson.setDisable(false);
+        btnValiderMatch.setDisable(true);
+        actualiserClassement();
+        vainqueur.setText(
+                "vainqueur :"
+                + tournoi.getClassement().get(0).getNom()
+                + " avec "
+                + tournoi.getClassement().get(0).getScore()
+                + "pts"
+        );
+
+    }
+
     public void actualiserClassement() {
+        System.out.println("actualisation du classement");
         StringBuilder classement = new StringBuilder();
         ArrayList<Equipe> listEquipes;
 
@@ -134,6 +187,7 @@ public class HelloController {
     }
 
     public void actualiserMatchs() {
+        System.out.println("actualisation liste des matchs");
         StringBuilder historique = new StringBuilder();
         ArrayList<Match> listMatchs;
 
@@ -143,8 +197,11 @@ public class HelloController {
             listMatchs = matchs;
         }
 
+        int i = 0;
         for( Match match : listMatchs) {
             historique.append("\n")
+                    .append(match.getPoule())
+                    .append(" : ")
                     .append(match.getEquipe1().getNom())
                     .append(" ")
                     .append(match.getScoreEquipe1())
@@ -152,7 +209,30 @@ public class HelloController {
                     .append(match.getScoreEquipe2())
                     .append(" ")
                     .append(match.getEquipe2().getNom());
+
+            if (actualMatch == i) {
+                historique.append(" <-- match actuel en saisie");
+            }
+            i++;
+
         }
         listMatch.setText(historique.toString());
+    }
+
+    public void allowClicButton() {
+        System.out.println("actualisation des boutons creation tournoi");
+        btnStartNewTournoiBrackets.setDisable(true);
+        btnStartNewTournoiDeathMatch.setDisable(true);
+
+        if(equipes.size() > 2) {
+            btnStartNewTournoiDeathMatch.setDisable(false);
+            if(equipes.size() >= 8) {
+                btnStartNewTournoiBrackets.setDisable(false);
+            }
+        }
+    }
+
+    public void exportJSON() {
+
     }
 }

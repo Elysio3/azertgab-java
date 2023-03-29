@@ -37,17 +37,7 @@ public class Poule {
         this.equipes.sort(new classementComparator());
     }
 
-    public boolean checkIfAllMatchCompleted() {
-        boolean allCompleted = true;
-        for(Match match : this.matchs) {
-            if (!match.isValide()) {
-                allCompleted = false;
-                break;
-            }
-            break;
-        }
-        return  allCompleted;
-    }
+
 
     public Poule() {}
 
