@@ -1,75 +1,47 @@
 package com.example.azertgabjava.entities;
 
 import java.util.ArrayList;
-import java.util.List;
 
 public class Poule {
-
-    private int id;
-    private String nom;
     private char lettre;
-    private ArrayList<Equipe> equipes = new ArrayList<>();
-    private ArrayList<Match> matchs = new ArrayList<>();
+    private final ArrayList<Equipe> equipes = new ArrayList<>();
+    private final ArrayList<Match> matchs = new ArrayList<>();
 
-    public Poule(int id, String nom, char lettre) {
-        this.id = id;
-        this.nom = nom;
+    /**
+     * constructeur
+     * @param lettre la lettre (repère) de la poule
+     */
+    public Poule(char lettre) {
         this.lettre = lettre;
     }
 
+    /**
+     * fonction d'ajout d'une equipe dans une poule
+     * @param equipe l'equipe à ajouter
+     */
     public void addEquipe(Equipe equipe) {
         this.equipes.add(equipe);
     }
 
+    /**
+     * fonction de création des matchs de la poule (tous ceux possibles)
+     */
     public void createMatchs() {
         // création de chaque match possible (toute combinaison possible)
-        int id = 0;
         for (int i = 0; i < this.equipes.size(); i++) {
             for (int j = i + 1; j < this.equipes.size(); j++) {
-                id++;
-                matchs.add(new Match(id, this.equipes.get(i), this.equipes.get(j)));
+                matchs.add(new Match(this.equipes.get(i), this.equipes.get(j)));
                 matchs.get(i).setPoule(this.lettre);
             }
         }
     }
-
-    public void actualiserClassement() {
-        this.equipes.sort(new classementComparator());
-    }
-
-
-
     public Poule() {}
-
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
-    }
-
-    public String getNom() {
-        return nom;
-    }
-
-    public void setNom(String nom) {
-        this.nom = nom;
-    }
 
     public ArrayList<Equipe> getEquipes() {
         return equipes;
     }
 
-    public void setEquipes(ArrayList<Equipe> equipes) {
-        this.equipes = equipes;
-    }
-
     public ArrayList<Match> getMatchs() {
         return matchs;
-    }
-
-    public void setMatchs(ArrayList<Match> matchs) {
-        this.matchs = matchs;
     }
 }

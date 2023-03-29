@@ -6,47 +6,39 @@ import java.util.Objects;
 public class Tournoi {
 
     private final String TYPE_BRACKETS = "brackets";
-    private int id;
-    private String nom;
     private String type;
     private boolean demie;
     private boolean finale;
     private ArrayList<Equipe> equipes = new ArrayList<>();
-    private ArrayList<Match> matchs = new ArrayList<>();
-    private Poule pouleA = new Poule();
-    private Poule pouleB = new Poule();
-
-    // on initialise le tournoi
-    // le type (arbre ou deathmatch)
-    // les équipes
-    // les matchs
+    private final ArrayList<Match> matchs = new ArrayList<>();
+    private final Poule pouleA = new Poule();
+    private final Poule pouleB = new Poule();
 
     /**
-     * fonction d'initialisation du tournoi
-     * @param nom le nom du tournoi
-     * @param type le type du tournoi (brackets ou deathmatch)
-     * @param equipes la liste des équipes
+     * fonction d'initialisation d'un tournoi
+     * initialise les variables, les poules (si besoin)
+     * instancie les matchs et équipes
+     * @param type le type du tournoi
+     * @param equipes la liste des équipes participantes
      * @throws Exception
      */
-    public void init(String nom, String type, ArrayList<Equipe> equipes) throws Exception{
-        this.nom = nom;
-        this.type = type;
-        // liste d'équipe définie
-        if(equipes.size() > 2) {
-            // initialise les scores à 0
-            for (Equipe equipe : equipes) {
-                equipe.setScore(0);
-            }
+    public void init(String type, ArrayList<Equipe> equipes) throws Exception {
 
-            // on ne peut faire un tournoi brackets sans un minimum d'équipes
+        this.type = type;
+        // pas de tournoi si moins de 3 équipes
+        if(equipes.size() > 2) {
+
+            // pas de tournoi brackets sant minimum de 8 équipes
             if(TYPE_BRACKETS.equals(type) && equipes.size() >= 8) {
                 System.out.println("tournoi de type brackets cree");
                 this.equipes = equipes;
                 this.type = TYPE_BRACKETS;
                 this.demie = false;
                 this.finale = false;
-                Poule pouleA = new Poule(1, "Poule A", 'A');
-                Poule pouleB = new Poule(2, "Poule B", 'B');
+
+                // création des deux poules
+                Poule pouleA = new Poule('A');
+                Poule pouleB = new Poule('B');
 
                 int i = 1;
                 for (Equipe equipe : equipes) {
@@ -58,15 +50,17 @@ public class Tournoi {
                     }
                     i++;
                 }
-                // on créée les match de chaque poule
+
+                // on génère les match de chaque poule
                 pouleA.createMatchs();
                 pouleB.createMatchs();
 
-                // on ajoute ces matchs généré dans
-                // la liste des match du tournoi
+                // on récupère les matchs générés
                 matchs.addAll(pouleA.getMatchs());
                 matchs.addAll(pouleB.getMatchs());
             } else {
+
+                // tournoi classique deathmatch
                 System.out.println("tournoi de type deathmatch cree");
                 this.equipes = equipes;
                 this.type = "deathmatch";
@@ -86,51 +80,69 @@ public class Tournoi {
         return equipes;
     }
 
+    /**
+     * fonction d'actualisation du classement
+     * (dans l'ordre des scores)
+     */
     public void actualiserClassement() {
         System.out.println("classement actualisé");
+        // on range la liste dans l'ordre des scores
         this.equipes.sort(new classementComparator());
     }
 
+    /**
+     * fonction de création des matchs du tournoi (tous ceux possibles)
+     */
     public void createMatchs() {
         System.out.println("matchs tournoi créés");
         // création de chaque match possible (toute combinaison possible)
-        int id = 0;
         for (int i = 0; i < this.equipes.size(); i++) {
             for (int j = i + 1; j < this.equipes.size(); j++) {
-                id++;
-                matchs.add(new Match(id, this.equipes.get(i), this.equipes.get(j)));
+                matchs.add(new Match(this.equipes.get(i), this.equipes.get(j)));
             }
         }
     }
+    /**
+     * fonction de création des matchs de demi-finale
+     */
     public void createDemieFinale() {
         System.out.println("demi finale créée");
         // création des match de quart de finales (8 equipes)
         actualiserClassement();
-        matchs.add(new Match(id, this.equipes.get(0), this.equipes.get(2)));
-        matchs.add(new Match(id, this.equipes.get(1), this.equipes.get(3)));
+        matchs.add(new Match(this.equipes.get(0), this.equipes.get(2)));
+        matchs.add(new Match(this.equipes.get(1), this.equipes.get(3)));
+        this.demie = true;
     }
 
+    /**
+     * fonction de création du matchs final
+     */
     public void createFinale() {
         System.out.println("finale créée");
         // création des match de quart de finales (8 equipes)
         actualiserClassement();
-        matchs.add(new Match(id, this.equipes.get(0), this.equipes.get(1)));
+        matchs.add(new Match(this.equipes.get(0), this.equipes.get(1)));
+        this.finale = true;
     }
 
 
+    /**
+     * fonction d'enregistrement des scores d'un match
+     * @param idMatch l'id du match
+     * @param scoreEquipe1 le score de l'equipe locale
+     * @param scoreEquipe2 le score de l'equipe visiteur
+     */
     public void registerMatch(int idMatch, int scoreEquipe1, int scoreEquipe2) {
 
         System.out.println("enregistrement match " + idMatch);
 
         // on ne modifie seulement si le match n'est pas déjà validé
         if(!this.matchs.get(idMatch).isValide()) {
-            // si tournoi de type bracket, on actualise les phase de poule si elles ne sont pas terminées
+
+            // si c'est un tournoi de type brackets, on va chercher l'équipe concernée pour
+            // update son score (seulement si c'est un match de poule
             if(TYPE_BRACKETS.equals(this.type)) {
 
-                // si c'est un match de poule
-                // et si les matchs de cette poule ne sont pas fini
-                // on va chercher l'équipe concernée par le match
-                // on update ses scores totaux
                 if(matchs.get(idMatch).getPoule() == 'A') {
                     System.out.println("Match de poule A");
                     int i = 0;
@@ -157,7 +169,7 @@ public class Tournoi {
                     System.out.println("Match de poule B");
                     int i = 0;
                     // on va chercher l'équipe correspondante au match depuis les poules
-                    for(Equipe equipe : this.getPouleA().getEquipes()) {
+                    for(Equipe equipe : this.getPouleB().getEquipes()) {
                         if(Objects.equals(equipe.getNom(), matchs.get(idMatch).getEquipe2().getNom())) {
                             equipe.addScore(scoreEquipe2);
                             System.out.println("locaux " + equipe.getNom()
@@ -175,6 +187,7 @@ public class Tournoi {
                 }
             }
 
+            // on update les scores
             System.out.println("Actualisation des scores");
             // on met à jour le match dans la liste des match du tournoi
             matchs.get(idMatch).setScoreEquipe1(scoreEquipe1);
@@ -190,6 +203,10 @@ public class Tournoi {
     }
 
 
+    /**
+     * fonction de test si l'ensemble des matchs sont complétés
+     * @return true|false
+     */
     public boolean checkIfAllMatchCompleted() {
         boolean allCompleted = true;
         for(Match match : this.matchs) {
@@ -201,80 +218,42 @@ public class Tournoi {
         return  allCompleted;
     }
 
-
-
-
+    /**
+     * constructeur
+     */
     public Tournoi() {}
-
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
-    }
-
-    public String getNom() {
-        return nom;
-    }
-
-    public void setNom(String nom) {
-        this.nom = nom;
-    }
 
     public ArrayList<Equipe> getEquipes() {
         return equipes;
-    }
-
-    public void setEquipes(ArrayList<Equipe> equipes) {
-        this.equipes = equipes;
     }
 
     public ArrayList<Match> getMatchs() {
         return matchs;
     }
 
-    public void setMatchs(ArrayList<Match> matchs) {
-        this.matchs = matchs;
-    }
-
     public Poule getPouleA() {
         return pouleA;
-    }
-
-    public void setPouleA(Poule pouleA) {
-        this.pouleA = pouleA;
     }
 
     public Poule getPouleB() {
         return pouleB;
     }
 
-    public void setPouleB(Poule pouleB) {
-        this.pouleB = pouleB;
-    }
-
     public String getType() {
         return type;
-    }
-
-    public void setType(String type) {
-        this.type = type;
     }
 
     public boolean isDemie() {
         return demie;
     }
 
-    public void setDemie(boolean demie) {
-        this.demie = demie;
-    }
-
     public boolean isFinale() {
         return finale;
     }
 
-    public void setFinale(boolean finale) {
-        this.finale = finale;
+    @Override
+    public String toString() {
+        // TODO Auto-generated method stub
+        return "\"Tournoi [type "+ this.type + "]";
     }
 }

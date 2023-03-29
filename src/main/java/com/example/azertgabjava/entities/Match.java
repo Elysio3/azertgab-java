@@ -1,8 +1,6 @@
 package com.example.azertgabjava.entities;
 
 public class Match {
-
-    private int id;
     private Equipe equipe1;
     private Equipe equipe2;
     private int scoreEquipe1;
@@ -19,8 +17,12 @@ public class Match {
 
     private boolean valide;
 
-    public Match(int id, Equipe equipe1, Equipe equipe2) {
-        this.id = id;
+    /**
+     * constructeir
+     * @param equipe1 l'equipe locale
+     * @param equipe2 l'equipe visiteur
+     */
+    public Match(Equipe equipe1, Equipe equipe2) {
         this.equipe1 = equipe1;
         this.equipe2 = equipe2;
         this.scoreEquipe1 = 0;
@@ -30,28 +32,12 @@ public class Match {
 
     public Match() {}
 
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
-    }
-
     public Equipe getEquipe1() {
         return equipe1;
     }
 
-    public void setEquipe1(Equipe equipe1) {
-        this.equipe1 = equipe1;
-    }
-
     public Equipe getEquipe2() {
         return equipe2;
-    }
-
-    public void setEquipe2(Equipe equipe2) {
-        this.equipe2 = equipe2;
     }
 
     public int getScoreEquipe1() {
@@ -76,5 +62,15 @@ public class Match {
 
     public void setValide(boolean valide) {
         this.valide = valide;
+    }
+
+    @Override
+    public String toString() {
+        // TODO Auto-generated method stub
+        return "\"Match [equipe1 "+ this.equipe1
+                + ", equipe2 = " + this.equipe2
+                + ", scoreEquipe1 "+ this.scoreEquipe1
+                + ", scoreEquipe2 = " + this.scoreEquipe2
+                + "]";
     }
 }

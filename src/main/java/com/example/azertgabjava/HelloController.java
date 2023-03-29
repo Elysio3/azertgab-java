@@ -3,7 +3,6 @@ package com.example.azertgabjava;
 import com.example.azertgabjava.entities.Equipe;
 import com.example.azertgabjava.entities.Match;
 import com.example.azertgabjava.entities.Tournoi;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -11,15 +10,18 @@ import javafx.scene.control.TextField;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Objects;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class HelloController {
     public VBox EquipeBox;
     public TextField inputNomEquipe;
     public Text NbTotalEquipe;
     public VBox TournoiBox;
-    public TextField inputNomTournoi;
     public Button btnStartNewTournoiDeathMatch;
     public Button btnStartNewTournoiBrackets;
     public VBox EquipeBox1;
@@ -39,7 +41,9 @@ public class HelloController {
     private int actualMatch;
 
 
-
+    /**
+     * à la création de la fenêtre
+     */
     @FXML
     protected void initialize() {
         System.out.println("génération de la fenêtre");
@@ -55,7 +59,7 @@ public class HelloController {
     }
 
     /**
-     *
+     * au clic, ajouter une équipe dans la liste actuelle
      */
     public void addNewEquipe() {
         System.out.println("clic ajouter Equipe");
@@ -78,42 +82,40 @@ public class HelloController {
      */
     public void startNewTournoiDeathMatch() throws Exception {
         System.out.println("clic startNewTournoiDeathMatch");
-        if(!Objects.equals(inputNomTournoi.getText(), "")) {
-            if(equipes.size() > 2) {
+        if(equipes.size() > 2) {
 
-                System.out.println("Creation tournoi " + inputNomTournoi.getText());
-                tournoi.init(inputNomTournoi.getText(), "deathmatch", equipes);
+            System.out.println("Creation tournoi type deathmatch");
+            tournoi.init( "deathmatch", equipes);
 
-                actualMatch = 0;
-                actualiserClassement();
-                actualiserMatchs();
-            }
+            actualMatch = 0;
+            actualiserClassement();
+            actualiserMatchs();
         }
-
     }
 
+    /**
+     * startNewTournoiBrackets : créée un nouveau tournoi en mode brackets
+     * avec la liste actuelle des équipes
+     */
     public void startNewTournoiBrackets() throws Exception {
         System.out.println("clic startNewTournoiBrackets");
-        if(!Objects.equals(inputNomTournoi.getText(), "")) {
-            if(equipes.size() >= 8) {
+        if(equipes.size() >= 8) {
 
-                System.out.println("Creation tournoi " + inputNomTournoi.getText());
-                tournoi.init(inputNomTournoi.getText(), "brackets", equipes);
+            System.out.println("Creation tournoi type brackets");
+            tournoi.init("brackets", equipes);
 
-                actualMatch = 0;
-                actualiserClassement();
-                actualiserMatchs();
-            }
+            actualMatch = 0;
+            actualiserClassement();
+            actualiserMatchs();
         }
+
     }
 
-    // enable/disable buttons
-
-
-
+    /**
+     * au clic, on récupère les scores en entrée et on update le match
+     */
     public void validerMatch() {
         System.out.println("Validation Match n°" + actualMatch);
-
 
         int scoreE1 = Integer.parseInt(inputScoreEquipe1.getText());
         int scoreE2 = Integer.parseInt(inputScoreEquipe2.getText());
@@ -151,6 +153,9 @@ public class HelloController {
         actualiserMatchs();
     }
 
+    /**
+     * au clic, on termine le tournoi (et possibilité de export json)
+     */
     public void terminerTournoi() {
         btnExportJson.setDisable(false);
         btnValiderMatch.setDisable(true);
@@ -165,6 +170,9 @@ public class HelloController {
 
     }
 
+    /**
+     * on actualise l'affichage du classement
+     */
     public void actualiserClassement() {
         System.out.println("actualisation du classement");
         StringBuilder classement = new StringBuilder();
@@ -186,6 +194,9 @@ public class HelloController {
         listClassement.setText(classement.toString());
     }
 
+    /**
+     * on actualise l'affichage des matchs
+     */
     public void actualiserMatchs() {
         System.out.println("actualisation liste des matchs");
         StringBuilder historique = new StringBuilder();
@@ -198,6 +209,7 @@ public class HelloController {
         }
 
         int i = 0;
+        int j = 0;
         for( Match match : listMatchs) {
             historique.append("\n")
                     .append(match.getPoule())
@@ -214,11 +226,20 @@ public class HelloController {
                 historique.append(" <-- match actuel en saisie");
             }
             i++;
-
+            j++;
+            if(j == 20) {
+                j = 0;
+                historique = new StringBuilder();
+            }
         }
         listMatch.setText(historique.toString());
+
+
     }
 
+    /**
+     * on vérifie l'accessibilité des boutons (selon le nombre d'équipes)
+     */
     public void allowClicButton() {
         System.out.println("actualisation des boutons creation tournoi");
         btnStartNewTournoiBrackets.setDisable(true);
@@ -232,7 +253,42 @@ public class HelloController {
         }
     }
 
+    /**
+     * fonction d'export sous fichier json de résumé du tournoi
+     */
     public void exportJSON() {
+        ObjectMapper Obj = new ObjectMapper();
+        try {
+            StringBuilder jsonStr = new StringBuilder();
+            // infos tournoi
+            jsonStr.append("{");
+            jsonStr.append(Obj.writeValueAsString(this.tournoi));
+            jsonStr.append(",");
+            // liste equipes (dans ordre classement
+            for (Equipe equipe : tournoi.getEquipes()) {
+                jsonStr.append(Obj.writeValueAsString(equipe));
+            }
+            jsonStr.append(",");
+            // liste des matchs (ordre chronologique
+            for (Match match : tournoi.getMatchs()) {
+                jsonStr.append(Obj.writeValueAsString(match));
+            }
+            jsonStr.append("}");
+            System.out.println(jsonStr);
+
+            FileWriter file = new FileWriter("C:\\Users\\mkerviche\\Downloads\\tournoi.json");
+            file.write(String.valueOf(jsonStr));
+
+            try {
+                file.flush();
+                file.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+        }
 
     }
 }
