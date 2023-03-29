@@ -7,6 +7,16 @@ public class Match {
     private Equipe equipe2;
     private int scoreEquipe1;
     private int scoreEquipe2;
+    private char poule;
+
+    public char getPoule() {
+        return poule;
+    }
+
+    public void setPoule(char poule) {
+        this.poule = poule;
+    }
+
     private boolean valide;
 
     public Match(int id, Equipe equipe1, Equipe equipe2) {

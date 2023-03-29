@@ -6,13 +6,7 @@ public class Equipe {
 
     private int id;
     private String nom;
-    private ArrayList<Joueur> listeJoueurs;
     private int score;
-
-    // ajouter un joueur dans l'équipe
-    public void ajouterJoueur(Joueur joueur) {
-        this.listeJoueurs.add(joueur);
-    }
 
     public Equipe(String nom) {
         this.nom = nom;
@@ -45,13 +39,5 @@ public class Equipe {
 
     public void setNom(String nom) {
         this.nom = nom;
-    }
-
-    public ArrayList<Joueur> getListeJoueurs() {
-        return listeJoueurs;
-    }
-
-    public void setListeJoueurs(ArrayList<Joueur> listeJoueurs) {
-        this.listeJoueurs = listeJoueurs;
     }
 }
